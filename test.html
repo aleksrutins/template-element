@@ -1,0 +1,61 @@
+<!doctype html>
+
+<html>
+  <head>
+    <title>TemplateElement Test Page</title>
+  </head>
+  <body>
+    <app-elem titleStr="Hello">
+      <div slot="nerf">Hi there</div>
+      Moo!
+    </app-elem>
+    <script type="module">
+      import {TemplateElement} from './index.js';
+      import eventHandler, {htmlEvents} from 'https:cdn.jsdelivr.net/npm/@munchkinhalfling/chandler';
+      class App extends TemplateElement {
+        constructor() {
+          super();
+          this.addObservable('title', 'titleStr');
+          this.addObservable('btnCount');
+          this.btnCount = 0;
+          this.titlePhases = [this.title];
+        }
+        get template() {
+          return htmlEvents(true)`
+  <h1 id="title">{{title}}</h1>
+  <input type="text" id="titleInp">
+  {{children[slot: nerf]}}
+  <button @click="changeTitle">Change title</button>
+  <br/>
+  <button @click="updateButtonCount" [title]="btnCount">Just increase the counter</button>
+  <br/>
+  <button @click="changeTitle">Another change title button</button>
+  <p id="counter" [title]="js['Button count is ' + this.btnCount]">Either button has been clicked {{btnCount}} times.</p>
+  {{children}}
+  <p>9 doubled is {{js[this.double(9) > 10? 'correct' : 'incorrect']}}</p>
+  <h2>Title phases</h2>
+  <ul id="titlePhases">
+    <li repeat="item in titlePhases">
+      {{item}}
+    </li>
+  </ul>
+          `
+        }
+        changeTitle() {
+          this.title = this.shadowRoot.querySelector('#titleInp').value;
+          this.titlePhases.push(this.title);
+          this.rerender('#title, ul#titlePhases li');
+          this.updateButtonCount();
+        }
+        updateButtonCount() {
+          this.btnCount++;
+          this.rerender('#counter');
+        }
+        double(i) {
+          return i * 2;
+        }
+      }
+      customElements.define('app-elem', App);
+    </script>
+  </body>
+</html>
